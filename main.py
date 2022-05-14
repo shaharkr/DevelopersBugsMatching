@@ -1,16 +1,12 @@
-# This is a sample Python script.
+from Service import Service
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    service = Service()
+    data_page_1 = service.get_apache_projects_data(1)
+    ids = service.save_repositories(data_page_1)
+    print(ids)
+    data_page_2 = service.get_apache_projects_data(2)
+    ids.extend(service.save_repositories(data_page_2))
+    print(ids)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
