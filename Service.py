@@ -1,5 +1,6 @@
 from CommonStrings import GitApi, ProjectTopicsJson, ApacheProjectsData
 from DataSources import ApiSource, TinyDbSource
+import json
 
 
 class Service:
@@ -14,12 +15,16 @@ class Service:
             using for get data with REST API of GitHub
         rep_data_access : RepositoriesDB
             repositories data access. using for save, update and delete repositories data
+        contributors_data_access : ContributorsDB
+            contributors data access. using for save, update and delete contributors data
         """
 
     def __init__(self):
         self.number_of_pages_apache_projects_data = 78
         self.git_source = ApiSource.ApiSource()
         self.rep_data_access = TinyDbSource.RepositoriesDB()
+        self.contributors_data_access = TinyDbSource.ContributorsDB()
+        self.topics_data_access = TinyDbSource.TopicsDB()
 
     def get_all_apache_project_topics(self, project_name):
         """
@@ -27,8 +32,9 @@ class Service:
         :return: list of strings
         """
         url = GitApi.url_get_apache_project_topics.format(project_name=project_name)
-        response = self.git_source.http_get_request(url)
-        list_of_topics = response.json()[ProjectTopicsJson.names]
+        # response = self.git_source.http_get_request(url)
+        # list_of_topics = response.json()[ProjectTopicsJson.names]
+        list_of_topics = self.git_source.http_get_request(url)[ProjectTopicsJson.names]
         return list_of_topics
 
     def get_apache_projects_data(self, page_number=None):
@@ -40,8 +46,9 @@ class Service:
         params = None
         if page_number is not None:
             params = {GitApi.page_number_url_param: page_number}
-        response = self.git_source.http_get_request(url, params)
-        list_of_projects_data = response.json()
+        # response = self.git_source.http_get_request(url, params)
+        # list_of_projects_data = response.json()
+        list_of_projects_data = self.git_source.http_get_request(url, params)
         return list_of_projects_data
 
     def get_all_apache_projects_data(self):
@@ -59,8 +66,9 @@ class Service:
         params = None
         if page_number is not None:
             params = {GitApi.page_number_url_param: page_number}
-        response = self.git_source.http_get_request(url, params)
-        list_of_contributors = response.json()
+        # response = self.git_source.http_get_request(url, params)
+        # list_of_contributors = response.json()
+        list_of_contributors = self.git_source.http_get_request(url, params)
         return list_of_contributors
 
     def get_all_apache_project_contributors(self, project_name):
@@ -69,10 +77,19 @@ class Service:
         page = 1
         list_returned = self.get_apache_project_contributors(project_name, page)
         while len(list_returned) > 0:
-            page += 1
-            list_returned = self.get_apache_projects_data(project_name, page)
             list_of_contributors.extend(list_returned)
+            page += 1
+            list_returned = self.get_apache_project_contributors(project_name, page)
         return list_of_contributors
+
+    def save_all_apache_project_contributors(self, project_name):
+        page = 1
+        list_returned = self.get_apache_project_contributors(project_name, page)
+        while len(list_returned) > 0:
+            self.contributors_data_access.insert_new_contributors(list_returned)
+            page += 1
+            list_returned = self.get_apache_project_contributors(project_name, page)
+        return True
 
     def save_repository(self, rep_data_dict):
         # TODO: consider format validation check
@@ -93,3 +110,15 @@ class Service:
         #     raise ValueError(m)
         new_ids = self.rep_data_access.insert_new_repositories(lst_reps_data_dicts)
         return new_ids
+
+    def save_contributors(self, lst_contributors_data_dicts):
+        new_ids = self.contributors_data_access.insert_new_contributors(lst_contributors_data_dicts)
+        return new_ids
+
+    def add_repository_id_to_topic(self, topic_label, repo_id):
+        if self.topics_data_access.db.contains(self.topics_data_access.Topic.name == topic_label):
+            # topic is already in db
+            self.topics_data_access.add_rep_id_to_topic(topic_label, repo_id)
+        else:
+            # topic isn't existing in db
+            self.topics_data_access.insert_topic(topic_label, repo_id)

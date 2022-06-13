@@ -1,13 +1,26 @@
+class ClusterSise:
+  project_domain = '/sise/home/kramers/DevelopersBugsMatching/'
+
 
 class GitApi:
-    url_get_all_apache_projects_data = 'https://api.github.com/orgs/apache/repos'
-    url_get_apache_project_topics = 'https://api.github.com/repos/apache/{project_name}/topics'
-    url_get_contributors_apache_project = 'https://api.github.com/repos/apache/{project_name}/contributors'  # TODO: handle multiple pages
+    # https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting
+    # url_get_all_apache_projects_data = 'https://api.github.com/orgs/apache/repos'
+    # url_get_apache_project_topics = 'https://api.github.com/repos/apache/{project_name}/topics'
+    # url_get_contributors_apache_project = 'https://api.github.com/repos/apache/{project_name}/contributors'
+    url_get_all_apache_projects_data = '/orgs/apache/repos'
+    url_get_apache_project_topics = '/repos/apache/{project_name}/topics'
+    url_get_contributors_apache_project = '/repos/apache/{project_name}/contributors'
     page_number_url_param = 'page'  # Params names for url
+    domain = 'api.github.com'
+    tok = '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'
 
 
 class ProjectTopicsJson:
     names = 'names'
+
+
+class GitToken:
+  tok = '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'
 
 
 class ProjectContributorsJson:
